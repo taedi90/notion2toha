@@ -1,0 +1,12 @@
+import pytz
+
+def init():
+    global TIME_ZONE
+    TIME_ZONE = pytz.timezone('Asia/Seoul')
+
+    global mattersForm
+    mattersForm = ['title', 'category', 'date', 'description', 'hero', 'tags', 'weight']
+
+    # 줄 간격
+    global LINE_SPACE
+    LINE_SPACE = 3
