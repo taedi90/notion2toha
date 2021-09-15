@@ -1,10 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import re
 import os
-import sys
-
 import settings
 import func
+import subprocess
+import urllib.parse
 
 
 class Ui_MainWindow(object):
@@ -54,42 +53,71 @@ class Ui_MainWindow(object):
           
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Alt 속성 생성기"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Notion Memo to Hugo-toha Post"))
         self.tedtOri.setPlainText(_translate("MainWindow", "변경하실 파일을 선택해주세요."))
         self.btnFind.setText(_translate("MainWindow", "불러오기"))
         self.btnSave.setText(_translate("MainWindow", "저장하기"))
         self.btnFind.setFocus()
+        self.btnSave.setDisabled(True)
 
     def btnFind_clicked(self):
         # 찾기
 
+        # 압축파일 경로 받아오기
         zipPath = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "불러오기", "./", "zip(*.zip)")
 
+        # 수정 전 md데이터 출력(압축 해제, temp 폴더 생성, 파일명 변경)
         self.tedtOri.setPlainText(func.getMemo(zipPath[0]))
 
-        # self.tedtMod.setPlainText(func.getPost(self.tedtOri.toPlainText()))
+        # 수정 후 md데이터 출력
+        self.tedtMod.setPlainText(func.getPost(self.tedtOri.toPlainText()))
+        
+        self.btnSave.setEnabled(True)
 
     def btnSave_clicked(self):
         # 저장하기
+
         
         # 저장경로 기존에 설정되어 있으면 그대로 아니면 다른경로로
-        if(settings.PROJECT_PATH == ''):
+        if(settings.PROJECT_PATH != ''):
             isProjectPath = True
+            path = settings.PROJECT_PATH
         else:   
             isProjectPath = False
+            path = QtWidgets.QFileDialog.getExistingDirectory(MainWindow, "저장 폴더 선택")
 
-        QtWidgets.QMessageBox.about(MainWindow, '알림', str(isProjectPath))
-        
-        func.savePost(isProjectPath, savePath, self.tedtMod.toPlainText())
-        
-        # QtWidgets.QMessageBox.about(MainWindow, '알림', "저장 완료!")
-        # 내용 비우기
+        option = QtWidgets.QMessageBox.question(MainWindow, "알림", 
+                "동일한 폴더가 존재하면 내용은 모두 삭제됩니다.\n"
+                + "계속하시겠습니까?")
+        if option == QtWidgets.QMessageBox.Yes:
+            path = func.savePost(isProjectPath, path, self.tedtMod.toPlainText())
 
+            # 내용 비우기
+            self.tedtMod.clear()
+            self.tedtOri.clear()
+            func.eraseTemp()
+            
+            self.btnSave.setEnabled(True)
+            option = QtWidgets.QMessageBox.question(MainWindow, "알림", 
+                    "저장경로: '{0}'\n저장경로로 이동할까요?".format(path))
+            if option == QtWidgets.QMessageBox.Yes:
+                if sys.platform == 'darwin':
+                    subprocess.check_call(['open', '--', path])
+                elif sys.platform == 'linux2':
+                    subprocess.check_call(['xdg-open', '--', path])
+                elif sys.platform == 'win32':
+                    subprocess.check_call(['explorer', path])
+
+class MyWindow(QtWidgets.QMainWindow):            
+    def closeEvent(self, event):
+        func.eraseTemp()
+        event.accept()
 
 if __name__ == "__main__":
+    import sys
     settings.init()
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
+    MainWindow = MyWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()

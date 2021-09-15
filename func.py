@@ -5,6 +5,7 @@ import os
 import urllib.parse
 import shutil
 from zipfile import ZipFile
+from distutils.dir_util import copy_tree
 
 def getMemo(zipPath):
     # 압축풀기
@@ -70,26 +71,9 @@ def renameFiles():
             renameMdFilePath = os.path.join(tempPath, "index.md")
             os.rename(mdFilePath, renameMdFilePath)
 
-def getPost():
-    md = open(targetDir + "index.md", 'w')
-    
-    md.write(txt)
-    md.close()
 
-def readMd(zipPath):
-    # 압축풀기
-    
-    
-    global targetDir
-    targetDir = re.sub("([\w\W]*/)[^/]*", r"\1", filePath)
-    with open(filePath) as f:
-        txt = f.read()
-    return txt
-
-
-
-def modifyPost(origin):
-    res = re.split('\n\n', origin, 2)
+def getPost(txt):
+    res = re.split('\n\n', txt, 2)
 
     dic = {}    # front matters가 입력 될 딕셔너리
 
@@ -113,16 +97,14 @@ def modifyPost(origin):
 
 
     # 카테고리 설정
+    global categories
     categories = dic['category'].split('-')
 
-    if len(categories) == 1:
-        name = categories[0]
-        identifier = categories[0]
-        parent = ''
-    elif len(categories) > 1:
-        name = categories[len(categories) - 1]
-        identifier = dic['category']
-        parent = categories[len(categories) - 2]
+    if len(categories) >= 1:
+        global name
+        name = nameFix(dic['title']) 
+        identifier = dic['category'] + "-" + dic['title'] 
+        parent = categories[len(categories) - 1]
 
     # 태그 설정
     if len(dic['tags']) > 0:
@@ -131,7 +113,7 @@ def modifyPost(origin):
         tags = ''
 
 
-    # 본문 수정
+    #### 본문 수정 부분
     body = ''.join(['\n',res[2]])
 
     # h태그 단계 낮추기(본문에 백코트가 있으면 안됨)
@@ -139,14 +121,20 @@ def modifyPost(origin):
     body = re.sub("(```\w[^`]*?```\n)?([^`]*?\n)(#{1,3})\s", r"\1\2\3# ", body) 
     # 이미지 링크 수정
     
-    body = re.sub("(!\[[\w\W]+?\]\()[\w\W]+?(/[\w\W]+?)\)", 
-                r"\1" + "image" + urllib.parse.unquote(r"\2") + ")", body) 
+    #body = re.sub("(!\[[\w\W]+?\]\()[\w\W]+?(/[\w\W]+?)\)", 
+    #            r"\1" + "image" + urllib.parse.unquote(r"\2") + ")", body) 
     # body = re.sub("!\[([\w\W]+?)\]\([\w\W]+?(/[\w\W]+?)\)", 
     #             "![" + r"\1" + "](image/" + r"\1" + ")", body) 
+    
+    for key, val in imgDict.items():
+        originPath = urllib.parse.quote(originImgDirName + "/" + key)
+        fixPath = renameImgDirName + "/" + val
+        body = body.replace(originPath, fixPath)
+    
 
     # 줄바꿈 간격 수정 (코드블럭 아래는 줄바꿈이 안됨)
-    body = re.sub("(```\w[^`]*?```\n)?([^`]*?)\n\n", r"\1\2" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
-    body = re.sub("(```)\n\n", r"\1" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
+    # body = re.sub("(```\w[^`]*?```\n)?([^`]*?)\n\n", r"\1\2" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
+    # body = re.sub("(```)\n\n", r"\1" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
 
     merge = []
 
@@ -170,19 +158,34 @@ def modifyPost(origin):
     return modify
 
 
-def savePost(isProjectPath, savePath, txt):
-    # 플젝폴더면 content/ 부모 카테고리들 / 제목
-    # 플젝폴더 아니면 그냥 그폴더에 저장
-    print('a')
-
-def saveMd(txt):
-    # index.md 생성
-    md = open(targetDir + "index.md", 'w')
+def savePost(isProjectPath, path, txt):
+    
+    # index.md 파일 저장
+    md = open(os.path.join(tempPath, 'index.md'), 'w')
     md.write(txt)
     md.close()
+    
+    # 프로젝트 폴더가 있으면 content 폴더 + 부모폴더에 저장
+    if(isProjectPath):
+        path = os.path.join(path, 'content')
+        for category in categories:
+            path = os.path.join(path, category)
+    
+    path = os.path.join(path, name)
+    
+    try:
+        shutil.copytree(tempPath, path)
+    except:
+        copy_tree(tempPath, path)
+    
+    return path
 
 
 
+
+def eraseTemp():
+    if os.path.exists('temp'):
+        shutil.rmtree('temp')
 
 def strToDate(str):
     str = re.sub("오후", "PM", str)
@@ -198,3 +201,43 @@ def strToDate(str):
 
     res = settings.TIME_ZONE.localize(res).isoformat()
     return res
+
+
+### 폴더에 못쓰는 문자 변경
+def nameFix(name):
+    name = name.replace('\\','_')
+    name = name.replace('/','_')
+    name = name.replace(':','_')
+    name = name.replace('*','_')
+    name = name.replace('<','_')
+    name = name.replace('>','_')
+    name = name.replace('|','_')
+    name = name.replace('-','_')
+    name = name.replace('?','')
+    name = name.replace('"','\'')
+    
+    return name
+    
+
+
+
+
+
+
+### 안쓰는거
+def readMd(zipPath):
+    # 압축풀기
+    
+    
+    global targetDir
+    targetDir = re.sub("([\w\W]*/)[^/]*", r"\1", filePath)
+    with open(filePath) as f:
+        txt = f.read()
+    return txt
+
+
+def saveMd(txt):
+    # index.md 생성
+    md = open(targetDir + "index.md", 'w')
+    md.write(txt)
+    md.close()
