@@ -31,9 +31,9 @@ class Ui_MainWindow(object):
         self.btnFind = QtWidgets.QPushButton(self.centralwidget)
         self.btnFind.setObjectName("btnFind")
         self.verticalLayout_2.addWidget(self.btnFind)
-        self.btnRun = QtWidgets.QPushButton(self.centralwidget)
-        self.btnRun.setObjectName("btnRun")
-        self.verticalLayout_2.addWidget(self.btnRun)
+        self.btnSave = QtWidgets.QPushButton(self.centralwidget)
+        self.btnSave.setObjectName("btnSave")
+        self.verticalLayout_2.addWidget(self.btnSave)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
         self.gridLayout.addLayout(self.verticalLayout_2, 0, 1, 1, 1)
@@ -50,38 +50,40 @@ class Ui_MainWindow(object):
         # UI 이벤트 설정
         # ------------------------------------------------
         self.btnFind.clicked.connect(self.btnFind_clicked)   
-        self.btnRun.clicked.connect(self.btnRun_clicked)
+        self.btnSave.clicked.connect(self.btnSave_clicked)
           
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Alt 속성 생성기"))
         self.tedtOri.setPlainText(_translate("MainWindow", "변경하실 파일을 선택해주세요."))
-        self.btnFind.setText(_translate("MainWindow", "찾기.."))
-        self.btnRun.setText(_translate("MainWindow", "변경하기"))
+        self.btnFind.setText(_translate("MainWindow", "불러오기"))
+        self.btnSave.setText(_translate("MainWindow", "저장하기"))
         self.btnFind.setFocus()
 
     def btnFind_clicked(self):
         # 찾기
 
-        fname = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "불러오기", "./", "Markdown(*.md)")
+        zipPath = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "불러오기", "./", "zip(*.zip)")
 
-        self.tedtOri.setPlainText(func.readMd(fname[0]))
+        self.tedtOri.setPlainText(func.getMemo(zipPath[0]))
 
-        self.tedtMod.setPlainText(func.modifyMd(self.tedtOri.toPlainText()))
+        # self.tedtMod.setPlainText(func.getPost(self.tedtOri.toPlainText()))
 
-    def btnRun_clicked(self):
-        # 변경하기
-
-        imgDir = func.findImgFolder()
-        if imgDir != None:
-            option = QtWidgets.QMessageBox.question(MainWindow, "폴더 변경", imgDir + "폴더명을 'Image'로 변경할까요?")
-            if option == QtWidgets.QMessageBox.Yes:
-                func.renameFolder(imgDir)
+    def btnSave_clicked(self):
+        # 저장하기
         
-        func.saveMd(self.tedtMod.toPlainText())
+        # 저장경로 기존에 설정되어 있으면 그대로 아니면 다른경로로
+        if(settings.PROJECT_PATH == ''):
+            isProjectPath = True
+        else:   
+            isProjectPath = False
 
-        QtWidgets.QMessageBox.about(MainWindow, '알림', "변경 완료!")
-
+        QtWidgets.QMessageBox.about(MainWindow, '알림', str(isProjectPath))
+        
+        func.savePost(isProjectPath, savePath, self.tedtMod.toPlainText())
+        
+        # QtWidgets.QMessageBox.about(MainWindow, '알림', "저장 완료!")
+        # 내용 비우기
 
 
 if __name__ == "__main__":

@@ -3,10 +3,83 @@ import re
 import settings
 import os
 import urllib.parse
+import shutil
+from zipfile import ZipFile
+
+def getMemo(zipPath):
+    # 압축풀기
+    unZip(zipPath)
+    
+    # 파일 경로 변경
+    renameFiles()
+    
+    # 파일 읽기
+    md = open(os.path.join(tempPath, 'index.md'), 'r')
+    txt = md.read()
+    md.close()
+    
+    return txt
+    
+
+def unZip(zipPath):
+    if os.path.exists('temp'):
+        shutil.rmtree('temp')
+    os.makedirs('temp')
+    
+    global tempPath
+    tempPath = os.path.join(os.getcwd(), 'temp')
+    #os.getcwd() + "/temp"
+    
+    with ZipFile(zipPath, "r") as zip:
+        zip.extractall(path=tempPath)
 
 
+def renameFiles():
+    childs = os.listdir(tempPath)
+    for child in childs:
+        fullPath = os.path.join(tempPath, child)
+        if os.path.isdir(fullPath):
+            originImgDirPath = fullPath
+            global originImgDirName
+            originImgDirName = child
+            
+            global renameImgDirName
+            renameImgDirName = 'images'
+            renameImgDirPath = os.path.join(tempPath, renameImgDirName)
+            
+            os.rename(originImgDirPath, renameImgDirPath)
+            
+            imgs = os.listdir(renameImgDirPath)
+            global imgDict
+            imgDict = {}
+            idx = 1
+            
+            for img in imgs:
+                imgExt = re.sub("[\w\W]+?(\.[\w]+?\Z)",r"\1",img)
+                renameImg = "pic-{0:04d}".format(idx) + imgExt
+                imgDict[img] = renameImg
+                
+                originImgPath = os.path.join(renameImgDirPath, img)
+                renameImgPath = os.path.join(renameImgDirPath, renameImg)
 
-def readMd(filePath):
+                os.rename(originImgPath, renameImgPath)
+                idx += 1
+        else:
+            mdFilePath = fullPath
+            # mdFileName = child
+            renameMdFilePath = os.path.join(tempPath, "index.md")
+            os.rename(mdFilePath, renameMdFilePath)
+
+def getPost():
+    md = open(targetDir + "index.md", 'w')
+    
+    md.write(txt)
+    md.close()
+
+def readMd(zipPath):
+    # 압축풀기
+    
+    
     global targetDir
     targetDir = re.sub("([\w\W]*/)[^/]*", r"\1", filePath)
     with open(filePath) as f:
@@ -15,7 +88,7 @@ def readMd(filePath):
 
 
 
-def modifyMd(origin):
+def modifyPost(origin):
     res = re.split('\n\n', origin, 2)
 
     dic = {}    # front matters가 입력 될 딕셔너리
@@ -97,6 +170,10 @@ def modifyMd(origin):
     return modify
 
 
+def savePost(isProjectPath, savePath, txt):
+    # 플젝폴더면 content/ 부모 카테고리들 / 제목
+    # 플젝폴더 아니면 그냥 그폴더에 저장
+    print('a')
 
 def saveMd(txt):
     # index.md 생성
@@ -104,21 +181,6 @@ def saveMd(txt):
     md.write(txt)
     md.close()
 
-
-
-def findImgFolder():
-    # 폴더명 image로 수정
-    childFiles = os.listdir(targetDir)
-    for childFile in childFiles:
-        fullPath = os.path.join(targetDir, childFile)
-        if os.path.isdir(fullPath):
-            # os.rename(fullDir, TARGET_DIR + "image")
-            return fullPath
-
-
-
-def renameFolder(imgDir):
-    os.rename(imgDir, targetDir + "image")
 
 
 
