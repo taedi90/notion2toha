@@ -102,8 +102,8 @@ def getPost(txt):
 
     if len(categories) >= 1:
         global name
-        name = nameFix(dic['title']) 
-        identifier = dic['category'] + "-" + dic['title'] 
+        name = nameFix(dic['title'])
+        identifier = nameFix(dic['title'])
         parent = categories[len(categories) - 1]
 
     # 태그 설정
@@ -168,6 +168,8 @@ def savePost(isProjectPath, path, txt):
     # 프로젝트 폴더가 있으면 content 폴더 + 부모폴더에 저장
     if(isProjectPath):
         path = os.path.join(path, 'content')
+        path = os.path.join(path, 'posts')
+        postsPath = path # _index.md 생성용도
         for category in categories:
             path = os.path.join(path, category)
     
@@ -177,10 +179,42 @@ def savePost(isProjectPath, path, txt):
         shutil.copytree(tempPath, path)
     except:
         copy_tree(tempPath, path)
-    
+        
+    # 부모폴더에 _index.md 만들기
+    if(isProjectPath):
+        for category in categories:
+            postsPath = os.path.join(postsPath, category)
+            mdFile = os.path.join(postsPath, "index.md")
+            if not os.path.isfile(mdFile):
+                md = open(os.path.join(postsPath, '_index.md'), 'w')
+                md.write(getIndexMd(category))
+                md.close()
+                
     return path
 
+# _index.md 문구 생성
+def getIndexMd(category):
+    idx = categories.index(category)
+    
+    merge = []
 
+    merge.append("---\n")
+    merge.append("title: " + category + "\n")
+    merge.append("menu:\n")
+    merge.append("  sidebar:\n")
+    merge.append("    name: " + category + "\n")
+    merge.append("    identifier: " + category + "\n")
+    
+    if idx > 0:
+        merge.append("    parent: " + categories[idx - 1] + "\n")
+        
+    merge.append("    weight: 10\n")
+    merge.append("---\n\n")
+    
+    txt = ''.join(merge)
+    
+    return txt
+    
 
 
 def eraseTemp():
@@ -218,26 +252,3 @@ def nameFix(name):
     
     return name
     
-
-
-
-
-
-
-### 안쓰는거
-def readMd(zipPath):
-    # 압축풀기
-    
-    
-    global targetDir
-    targetDir = re.sub("([\w\W]*/)[^/]*", r"\1", filePath)
-    with open(filePath) as f:
-        txt = f.read()
-    return txt
-
-
-def saveMd(txt):
-    # index.md 생성
-    md = open(targetDir + "index.md", 'w')
-    md.write(txt)
-    md.close()
