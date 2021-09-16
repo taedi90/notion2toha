@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
 from PyQt5 import QtCore, QtGui, QtWidgets
-import os
 import settings
 import func
 import subprocess
-import urllib.parse
+import os
 
 
 class Ui_MainWindow(object):
@@ -60,9 +62,8 @@ class Ui_MainWindow(object):
         self.btnFind.setFocus()
         self.btnSave.setDisabled(True)
 
+    # 불러오기
     def btnFind_clicked(self):
-        # 찾기
-
         # 압축파일 경로 받아오기
         zipPath = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "불러오기", "./", "zip(*.zip)")
 
@@ -72,14 +73,13 @@ class Ui_MainWindow(object):
         # 수정 후 md데이터 출력
         self.tedtMod.setPlainText(func.getPost(self.tedtOri.toPlainText()))
         
+        # 저장하기 버튼 활성화
         self.btnSave.setEnabled(True)
 
+    # 저장하기
     def btnSave_clicked(self):
-        # 저장하기
-
-        
-        # 저장경로 기존에 설정되어 있으면 그대로 아니면 다른경로로
-        if(settings.PROJECT_PATH != ''):
+        # 블로그 프로젝트 설정되어 있으면 그대로 아니면 다른경로로
+        if settings.PROJECT_PATH != '' and os.path.isdir(path):
             isProjectPath = True
             path = settings.PROJECT_PATH
         else:   
@@ -106,7 +106,7 @@ class Ui_MainWindow(object):
                 elif sys.platform == 'linux2':
                     subprocess.check_call(['xdg-open', '--', path])
                 elif sys.platform == 'win32':
-                    subprocess.check_call(['explorer', path])
+                    os.startfile(path)
 
 class MyWindow(QtWidgets.QMainWindow):            
     def closeEvent(self, event):

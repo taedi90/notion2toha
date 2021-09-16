@@ -15,7 +15,8 @@ def getMemo(zipPath):
     renameFiles()
     
     # 파일 읽기
-    md = open(os.path.join(tempPath, 'index.md'), 'r')
+    # md = open(os.path.join(tempPath, 'index.md'), 'rt', encoding='UTF8')
+    md = open(tempPath + '/index.md', 'rt', encoding='UTF8')
     txt = md.read()
     md.close()
     
@@ -28,8 +29,8 @@ def unZip(zipPath):
     os.makedirs('temp')
     
     global tempPath
-    tempPath = os.path.join(os.getcwd(), 'temp')
-    #os.getcwd() + "/temp"
+    # tempPath = os.path.join(os.getcwd(), 'temp')
+    tempPath = os.getcwd() + "/temp"
     
     with ZipFile(zipPath, "r") as zip:
         zip.extractall(path=tempPath)
@@ -38,7 +39,8 @@ def unZip(zipPath):
 def renameFiles():
     childs = os.listdir(tempPath)
     for child in childs:
-        fullPath = os.path.join(tempPath, child)
+        # fullPath = os.path.join(tempPath, child)
+        fullPath = tempPath + "/" + child
         if os.path.isdir(fullPath):
             originImgDirPath = fullPath
             global originImgDirName
@@ -46,7 +48,8 @@ def renameFiles():
             
             global renameImgDirName
             renameImgDirName = 'images'
-            renameImgDirPath = os.path.join(tempPath, renameImgDirName)
+            # renameImgDirPath = os.path.join(tempPath, renameImgDirName)
+            renameImgDirPath = tempPath + "/" + renameImgDirName
             
             os.rename(originImgDirPath, renameImgDirPath)
             
@@ -60,15 +63,17 @@ def renameFiles():
                 renameImg = "pic-{0:04d}".format(idx) + imgExt
                 imgDict[img] = renameImg
                 
-                originImgPath = os.path.join(renameImgDirPath, img)
-                renameImgPath = os.path.join(renameImgDirPath, renameImg)
+                # originImgPath = os.path.join(renameImgDirPath, img)
+                originImgPath = renameImgDirPath + "/" + img
+                # renameImgPath = os.path.join(renameImgDirPath, renameImg)
+                renameImgPath = renameImgDirPath + "/" + renameImg
 
                 os.rename(originImgPath, renameImgPath)
                 idx += 1
         else:
             mdFilePath = fullPath
-            # mdFileName = child
-            renameMdFilePath = os.path.join(tempPath, "index.md")
+            # renameMdFilePath = os.path.join(tempPath, "index.md")
+            renameMdFilePath = tempPath + "/index.md"
             os.rename(mdFilePath, renameMdFilePath)
 
 
@@ -117,25 +122,20 @@ def getPost(txt):
     body = ''.join(['\n',res[2]])
 
     # h태그 단계 낮추기(본문에 백코트가 있으면 안됨)
-    # body = re.sub("(```\w[^`]*?```\n)?([^`]*?)(#\s)", r"\1\2## ", body) 
     body = re.sub("(```\w[^`]*?```\n)?([^`]*?\n)(#{1,3})\s", r"\1\2\3# ", body) 
+    
     # 이미지 링크 수정
-    
-    #body = re.sub("(!\[[\w\W]+?\]\()[\w\W]+?(/[\w\W]+?)\)", 
-    #            r"\1" + "image" + urllib.parse.unquote(r"\2") + ")", body) 
-    # body = re.sub("!\[([\w\W]+?)\]\([\w\W]+?(/[\w\W]+?)\)", 
-    #             "![" + r"\1" + "](image/" + r"\1" + ")", body) 
-    
     for key, val in imgDict.items():
         originPath = urllib.parse.quote(originImgDirName + "/" + key)
         fixPath = renameImgDirName + "/" + val
         body = body.replace(originPath, fixPath)
     
-
     # 줄바꿈 간격 수정 (코드블럭 아래는 줄바꿈이 안됨)
     # body = re.sub("(```\w[^`]*?```\n)?([^`]*?)\n\n", r"\1\2" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
     # body = re.sub("(```)\n\n", r"\1" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
 
+
+    # front matters 입력 및 본문 병합
     merge = []
 
     merge.append("---\n")
@@ -161,19 +161,23 @@ def getPost(txt):
 def savePost(isProjectPath, path, txt):
     
     # index.md 파일 저장
-    md = open(os.path.join(tempPath, 'index.md'), 'w')
+    # md = open(os.path.join(tempPath, 'index.md'), 'w', encoding='UTF8')
+    md = open(tempPath + '/index.md', 'wt', encoding='UTF8')
     md.write(txt)
     md.close()
     
     # 프로젝트 폴더가 있으면 content 폴더 + 부모폴더에 저장
     if(isProjectPath):
-        path = os.path.join(path, 'content')
-        path = os.path.join(path, 'posts')
+        # path = os.path.join(path, 'content')
+        # path = os.path.join(path, 'posts')
+        path = path + '/content/posts'
         postsPath = path # _index.md 생성용도
         for category in categories:
-            path = os.path.join(path, category)
+            # path = os.path.join(path, category)
+            path = path + '/' + category
     
-    path = os.path.join(path, name)
+    # path = os.path.join(path, name)
+    path = path + '/' + name
     
     try:
         shutil.copytree(tempPath, path)
@@ -183,10 +187,13 @@ def savePost(isProjectPath, path, txt):
     # 부모폴더에 _index.md 만들기
     if(isProjectPath):
         for category in categories:
-            postsPath = os.path.join(postsPath, category)
-            mdFile = os.path.join(postsPath, "index.md")
+            # postsPath = os.path.join(postsPath, category)
+            postsPath = postsPath + '/' + category
+            # mdFile = os.path.join(postsPath, "index.md")
+            mdFile = postsPath + "/index.md"
             if not os.path.isfile(mdFile):
-                md = open(os.path.join(postsPath, '_index.md'), 'w')
+                # md = open(os.path.join(postsPath, '_index.md'), 'w', encoding='UTF8')
+                md = open(postsPath + '/_index.md', 'wt', encoding='UTF8')
                 md.write(getIndexMd(category))
                 md.close()
                 
