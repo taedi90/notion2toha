@@ -67,6 +67,10 @@ class Ui_MainWindow(object):
         # 압축파일 경로 받아오기
         zipPath = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "불러오기", "./", "zip(*.zip)")
 
+        # 경로 설정이 되지 않은 경우 종료
+        if not zipPath[0]:
+            return
+
         # 수정 전 md데이터 출력(압축 해제, temp 폴더 생성, 파일명 변경)
         self.tedtOri.setPlainText(func.getMemo(zipPath[0]))
 
@@ -85,6 +89,10 @@ class Ui_MainWindow(object):
         else:   
             isProjectPath = False
             path = QtWidgets.QFileDialog.getExistingDirectory(MainWindow, "저장 폴더 선택")
+            
+        # 경로 설정이 되지 않은 경우 종료
+        if not path:
+            return
 
         option = QtWidgets.QMessageBox.question(MainWindow, "알림", 
                 "동일한 폴더가 존재하면 내용은 모두 삭제됩니다.\n"
