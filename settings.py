@@ -13,5 +13,5 @@ def init():
 
     # 저장경로(없을 경우 ""로, 경로는 \ 말고 /로 구분)
     global PROJECT_PATH
-    PROJECT_PATH = "/Users/taedi/taedi90.github.iot"
+    PROJECT_PATH = "/Users/taedi/taedi90.github.io"
     # PROJECT_PATH = ''

@@ -79,7 +79,7 @@ class Ui_MainWindow(object):
     # 저장하기
     def btnSave_clicked(self):
         # 블로그 프로젝트 설정되어 있으면 그대로 아니면 다른경로로
-        if settings.PROJECT_PATH != '' and os.path.isdir(path):
+        if settings.PROJECT_PATH != '' and os.path.isdir(settings.PROJECT_PATH):
             isProjectPath = True
             path = settings.PROJECT_PATH
         else:   

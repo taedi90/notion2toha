@@ -139,7 +139,7 @@ def getPost(txt):
     merge = []
 
     merge.append("---\n")
-    merge.append("title: " + dic['title'] + "\n")
+    merge.append("title: \"" + dic['title'] + "\"\n")
     merge.append("date: " + strToDate(dic['date']) + "\n")
     merge.append("hero: " + dic['hero'] + "\n")
     merge.append("description: " + dic['description'] + "\n")
@@ -256,6 +256,8 @@ def nameFix(name):
     name = name.replace('-','_')
     name = name.replace('?','')
     name = name.replace('"','\'')
+    name = name.replace('[','(')
+    name = name.replace(']',')')
     
     return name
     
