@@ -105,11 +105,30 @@ def getPost(txt):
     global categories
     categories = dic['category'].split('-')
 
-    if len(categories) >= 1:
-        global name
+
+        
+    # if len(categories) >= 1:
+    #     global name
+    #     name = nameFix(dic['title'])
+    #     identifier = nameFix(dic['title'])
+    #     parent = categories[len(categories) - 1]
+        
+    # name 설정
+    global name
+    if len(dic['name']) > 0:
+        name = nameFix(dic['name'])
+    else:
         name = nameFix(dic['title'])
-        identifier = nameFix(dic['title'])
+        
+    # parent & identfier 설정
+    if len(categories) >= 1:
         parent = categories[len(categories) - 1]
+        identifier = dic['category'] + '-' + name
+    else:
+        parent = dic['category']
+        identifier = name
+
+
 
     # 태그 설정
     if len(dic['tags']) > 0:
@@ -122,17 +141,48 @@ def getPost(txt):
     body = ''.join(['\n',res[2]])
 
     # h태그 단계 낮추기(본문에 백코트가 있으면 안됨)
-    body = re.sub("(```\w[^`]*?```\n)?([^`]*?\n)(#{1,3})\s", r"\1\2\3# ", body) 
-    
-    # 이미지 링크 수정
-    for key, val in imgDict.items():
-        originPath = urllib.parse.quote(originImgDirName + "/" + key)
-        fixPath = renameImgDirName + "/" + val
-        body = body.replace(originPath, fixPath)
+    # body = re.sub("(```\w[^`]*?```\n)?([^`]*?\n)(#{1,3})\s", r"\1\2\3# ", body) 
     
     # 줄바꿈 간격 수정 (코드블럭 아래는 줄바꿈이 안됨)
     # body = re.sub("(```\w[^`]*?```\n)?([^`]*?)\n\n", r"\1\2" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
     # body = re.sub("(```)\n\n", r"\1" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
+    
+    # 이미지 링크 수정
+    if 'imgDict' in locals():
+        for key, val in imgDict.items():
+            originPath = urllib.parse.quote(originImgDirName + "/" + key)
+            fixPath = renameImgDirName + "/" + val
+            body = body.replace(originPath, fixPath)
+        
+    # 줄별로 나누기
+    paragraphs = body.split('\n\n')
+    modParagraphs = []
+    blockquote = 0
+    
+    # h태그 단계 낮추기
+    for p in paragraphs:
+        # ``` 코드블럭 시작 종료 여부 확인(스페이스 제외)
+        if re.match('[\s]*```', p):
+            blockquote ^= 1
+            
+        # > 인용문으로 시작하거나 코드블럭 내부인 경우 검색 X
+        if re.match('[\s]*>' , p) or blockquote == 1:
+            modParagraphs.append(p)
+            continue
+        # h1 ~ h5 태그 hn + 1 태그로 바꾸기
+        if re.match('[\s]*#{1,5}\s', p):
+            p = re.sub('([\s]*#{1,5})\s',r'\1# ', p) 
+        
+        # h6 태그는 볼드체로 수정
+        elif re.match('[\s]*#{6}\s', p):
+            p = re.sub('([\s]*)#{6}\s([\W\w]*)',r'** \1\2 **', p)         
+            
+        # 나머지 문장들 처리(코드블럭 종료 포함)
+        modParagraphs.append(p)
+            
+    # 줄별로 합치기
+    modBody = '\n\n'.join(modParagraphs)
+    
 
 
     # front matters 입력 및 본문 병합
@@ -151,7 +201,7 @@ def getPost(txt):
     merge.append("    parent: " + parent + "\n")
     merge.append("    weight: " + dic['weight'] + "\n")
     merge.append("---\n\n")
-    merge.append(body)
+    merge.append(modBody)
 
     modify = ''.join(merge)
 

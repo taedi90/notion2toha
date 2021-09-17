@@ -7,7 +7,7 @@ def init():
 
     # front matters 항목
     global mattersForm
-    mattersForm = ['title', 'category', 'date', 'description', 'hero', 'tags', 'weight']
+    mattersForm = ['title', 'category', 'name', 'date', 'description', 'hero', 'tags', 'weight']
 
     # 줄 간격
     # global LINE_SPACE
