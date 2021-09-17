@@ -64,15 +64,15 @@ class Ui_MainWindow(object):
 
     # 불러오기
     def btnFind_clicked(self):
-        # 압축파일 경로 받아오기
-        zipPath = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "불러오기", "./", "zip(*.zip)")
+        # 파일 경로 받아오기
+        filePath = QtWidgets.QFileDialog.getOpenFileName(MainWindow, "불러오기", "./", "마크다운 및 압축 파일(*.md *.zip)")
 
         # 경로 설정이 되지 않은 경우 종료
-        if not zipPath[0]:
+        if not filePath[0]:
             return
 
         # 수정 전 md데이터 출력(압축 해제, temp 폴더 생성, 파일명 변경)
-        self.tedtOri.setPlainText(func.getMemo(zipPath[0]))
+        self.tedtOri.setPlainText(func.getMemo(filePath[0]))
 
         # 수정 후 md데이터 출력
         self.tedtMod.setPlainText(func.getPost(self.tedtOri.toPlainText()))

@@ -7,11 +7,18 @@ import shutil
 from zipfile import ZipFile
 from distutils.dir_util import copy_tree
 
-def getMemo(zipPath):
-    # 압축풀기
-    unZip(zipPath)
-    
-    # 파일 경로 변경
+def getMemo(filePath):
+    # 임시 폴더 생성
+    setTempPath()
+
+    # 파일 확장자 확인
+    ext = os.path.splitext(filePath)[1]
+    if ext in '.zip':
+        unZip(filePath)
+    elif ext in '.md':
+        copyMd(filePath)
+
+    # 파일 이름 변경
     renameFiles()
     
     # 파일 읽기
@@ -21,9 +28,8 @@ def getMemo(zipPath):
     md.close()
     
     return txt
-    
 
-def unZip(zipPath):
+def setTempPath():
     if os.path.exists('temp'):
         shutil.rmtree('temp')
     os.makedirs('temp')
@@ -32,6 +38,11 @@ def unZip(zipPath):
     # tempPath = os.path.join(os.getcwd(), 'temp')
     tempPath = os.getcwd() + "/temp"
     
+def copyMd(filePath):
+    shutil.copy(filePath, tempPath)
+    
+
+def unZip(zipPath):
     with ZipFile(zipPath, "r") as zip:
         zip.extractall(path=tempPath)
 
@@ -71,10 +82,11 @@ def renameFiles():
                 os.rename(originImgPath, renameImgPath)
                 idx += 1
         else:
-            mdFilePath = fullPath
-            # renameMdFilePath = os.path.join(tempPath, "index.md")
-            renameMdFilePath = tempPath + "/index.md"
-            os.rename(mdFilePath, renameMdFilePath)
+            if os.path.splitext(fullPath)[1] == '.md' :
+                mdFilePath = fullPath
+                # renameMdFilePath = os.path.join(tempPath, "index.md")
+                renameMdFilePath = tempPath + "/index.md"
+                os.rename(mdFilePath, renameMdFilePath)
 
 
 def getPost(txt):
@@ -104,14 +116,7 @@ def getPost(txt):
     # 카테고리 설정
     global categories
     categories = dic['category'].split('-')
-
-
         
-    # if len(categories) >= 1:
-    #     global name
-    #     name = nameFix(dic['title'])
-    #     identifier = nameFix(dic['title'])
-    #     parent = categories[len(categories) - 1]
         
     # name 설정
     global name
@@ -165,10 +170,11 @@ def getPost(txt):
         if re.match('[\s]*```', p):
             blockquote ^= 1
             
-        # > 인용문으로 시작하거나 코드블럭 내부인 경우 검색 X
+        # > 인용문으로 시작하거나 코드블럭 내부인 경우 h 태그 탐색안함
         if re.match('[\s]*>' , p) or blockquote == 1:
             modParagraphs.append(p)
             continue
+        
         # h1 ~ h5 태그 hn + 1 태그로 바꾸기
         if re.match('[\s]*#{1,5}\s', p):
             p = re.sub('([\s]*#{1,5})\s',r'\1# ', p) 
@@ -177,7 +183,7 @@ def getPost(txt):
         elif re.match('[\s]*#{6}\s', p):
             p = re.sub('([\s]*)#{6}\s([\W\w]*)',r'** \1\2 **', p)         
             
-        # 나머지 문장들 처리(코드블럭 종료 포함)
+        # 문장을 리스트에 추가
         modParagraphs.append(p)
             
     # 줄별로 합치기
@@ -240,8 +246,9 @@ def savePost(isProjectPath, path, txt):
             # postsPath = os.path.join(postsPath, category)
             postsPath = postsPath + '/' + category
             # mdFile = os.path.join(postsPath, "index.md")
-            mdFile = postsPath + "/index.md"
-            if not os.path.isfile(mdFile):
+            index1 = postsPath + "/index.md"
+            index2 = postsPath + "/_index.md"
+            if not os.path.isfile(index1) and not os.path.isfile(index2):
                 # md = open(os.path.join(postsPath, '_index.md'), 'w', encoding='UTF8')
                 md = open(postsPath + '/_index.md', 'wt', encoding='UTF8')
                 md.write(getIndexMd(category))
@@ -294,7 +301,7 @@ def strToDate(str):
     return res
 
 
-### 폴더에 못쓰는 문자 변경
+### 폴더, front matter에 사용하지 못하는 문자 수정
 def nameFix(name):
     name = name.replace('\\','_')
     name = name.replace('/','_')
