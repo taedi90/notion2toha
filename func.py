@@ -23,11 +23,14 @@ def getMemo(filePath):
     
     # 파일 읽기
     # md = open(os.path.join(tempPath, 'index.md'), 'rt', encoding='UTF8')
-    md = open(tempPath + '/index.md', 'rt', encoding='UTF8')
-    txt = md.read()
-    md.close()
     
-    return txt
+    txt = None
+    try:
+        md = open(tempPath + '/index.md', 'rt', encoding='UTF8')
+        txt = md.read()
+        md.close()
+    finally:
+        return txt
 
 def setTempPath():
     if os.path.exists('temp'):
@@ -160,19 +163,35 @@ def getPost(txt):
             body = body.replace(originPath, fixPath)
         
     # 줄별로 나누기
-    paragraphs = body.split('\n\n')
+    paragraphs = body.split('\n')
     modParagraphs = []
     blockquote = 0
+    quotation = 0
+    
     
     # h태그 단계 낮추기
     for p in paragraphs:
-        # ``` 코드블럭 시작 종료 여부 확인(스페이스 제외)
+        # ``` 코드블럭 확인(스페이스 제외)
         if re.match('[\s]*```', p):
             blockquote ^= 1
             
-        # > 인용문으로 시작하거나 코드블럭 내부인 경우 h 태그 탐색안함
-        if re.match('[\s]*>' , p) or blockquote == 1:
+        # 코드블럭 내부인 경우 h 태그 탐색안함
+        if blockquote == 1:
+            print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
             modParagraphs.append(p)
+            continue
+        
+        # > 인용문 줄바꿈 풀리는 현상(다단 인용은 처리 어려움)
+        if re.match('[\s]*>' , p):
+            quotation = 1
+        elif quotation == 1 and re.fullmatch('', p):
+            quotation = 0   # 인용문 종료
+            
+            
+        # > 인용문 줄바꿈 처리, h 태그 탐색안함
+        if quotation == 1:
+            print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
+            modParagraphs.append(p + '  ')
             continue
         
         # h1 ~ h5 태그 hn + 1 태그로 바꾸기
@@ -184,10 +203,11 @@ def getPost(txt):
             p = re.sub('([\s]*)#{6}\s([\W\w]*)',r'** \1\2 **', p)         
             
         # 문장을 리스트에 추가
+        print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
         modParagraphs.append(p)
             
     # 줄별로 합치기
-    modBody = '\n\n'.join(modParagraphs)
+    modBody = '\n'.join(modParagraphs)
     
 
 

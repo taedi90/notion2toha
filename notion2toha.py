@@ -72,7 +72,15 @@ class Ui_MainWindow(object):
             return
 
         # 수정 전 md데이터 출력(압축 해제, temp 폴더 생성, 파일명 변경)
-        self.tedtOri.setPlainText(func.getMemo(filePath[0]))
+        txt = func.getMemo(filePath[0])
+        
+        # 정상 파일 여부 확인
+        if not txt:
+            QtWidgets.QMessageBox.information(MainWindow, "알림", "파일을 다시 확인하여 주시기 바립니다.")
+            return
+        
+        # 수정 전 md데이터 출력
+        self.tedtOri.setPlainText(txt)
 
         # 수정 후 md데이터 출력
         self.tedtMod.setPlainText(func.getPost(self.tedtOri.toPlainText()))
