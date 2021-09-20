@@ -8,6 +8,8 @@ pyqt5 = "*"
 pytz = "*"
 markdownify = "*"
 zipfile2 = "*"
+pyinstaller = "*"
+setuptools = "*"
 
 [dev-packages]
 

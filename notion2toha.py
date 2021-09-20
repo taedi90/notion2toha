@@ -35,6 +35,9 @@ class Ui_MainWindow(object):
         self.btnSave = QtWidgets.QPushButton(self.centralwidget)
         self.btnSave.setObjectName("btnSave")
         self.verticalLayout_2.addWidget(self.btnSave)
+        self.btnPath = QtWidgets.QPushButton(self.centralwidget)
+        self.btnPath.setObjectName("btnPath")
+        self.verticalLayout_2.addWidget(self.btnPath)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
         self.gridLayout.addLayout(self.verticalLayout_2, 0, 1, 1, 1)
@@ -52,13 +55,16 @@ class Ui_MainWindow(object):
         # ------------------------------------------------
         self.btnFind.clicked.connect(self.btnFind_clicked)   
         self.btnSave.clicked.connect(self.btnSave_clicked)
+        self.btnPath.clicked.connect(self.btnPath_clicked)
           
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Notion Memo to Hugo-toha Post"))
-        self.tedtOri.setPlainText(_translate("MainWindow", "변경하실 파일을 선택해주세요."))
+        # self.tedtOri.setPlainText(_translate("MainWindow", "변경하실 파일을 선택해주세요."))
+        self.tedtOri.setPlainText(_translate("MainWindow", settings.PROGRAM_PATH))
         self.btnFind.setText(_translate("MainWindow", "불러오기"))
         self.btnSave.setText(_translate("MainWindow", "저장하기"))
+        self.btnPath.setText(_translate("MainWindow", "경로설정"))
         self.btnFind.setFocus()
         self.btnSave.setDisabled(True)
 
@@ -123,11 +129,30 @@ class Ui_MainWindow(object):
                     subprocess.check_call(['xdg-open', '--', path])
                 elif sys.platform == 'win32':
                     os.startfile(path)
+                    
+    # 저장 경로 지정
+    def btnPath_clicked(self):        
+        option = QtWidgets.QMessageBox.question(MainWindow, "프로젝트 폴더 지정", 
+                "현재 설정 경로 : '" + settings.PROJECT_PATH
+                + "'\n변경 하시겠습니까?"
+                + "\n(블로그 프로젝트 루트 폴더를 선택하시기 바랍니다.)")
+        if option == QtWidgets.QMessageBox.Yes:
+            path = QtWidgets.QFileDialog.getExistingDirectory(MainWindow, "저장 폴더 선택")
+            
+            if not path:
+                return
+            
+            path = path.replace('￦', '/')
+            
+            settings.PROJECT_PATH = path
+            settings.writeIni()
 
 class MyWindow(QtWidgets.QMainWindow):            
     def closeEvent(self, event):
         func.eraseTemp()
+        settings.writeIni()
         event.accept()
+
 
 if __name__ == "__main__":
     import sys

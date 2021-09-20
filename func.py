@@ -33,13 +33,15 @@ def getMemo(filePath):
         return txt
 
 def setTempPath():
-    if os.path.exists('temp'):
-        shutil.rmtree('temp')
-    os.makedirs('temp')
-    
     global tempPath
     # tempPath = os.path.join(os.getcwd(), 'temp')
-    tempPath = os.getcwd() + "/temp"
+    tempPath = settings.PROGRAM_PATH + "/temp"
+
+    if os.path.exists(tempPath):
+        shutil.rmtree(tempPath)
+    os.makedirs(tempPath)
+    
+
     
 def copyMd(filePath):
     shutil.copy(filePath, tempPath)
@@ -177,7 +179,7 @@ def getPost(txt):
             
         # 코드블럭 내부인 경우 h 태그 탐색안함
         if blockquote == 1:
-            print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
+            # print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
             modParagraphs.append(p)
             continue
         
@@ -190,7 +192,7 @@ def getPost(txt):
             
         # > 인용문 줄바꿈 처리, h 태그 탐색안함
         if quotation == 1:
-            print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
+            # print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
             modParagraphs.append(p + '  ')
             continue
         
@@ -203,7 +205,7 @@ def getPost(txt):
             p = re.sub('([\s]*)#{6}\s([\W\w]*)',r'** \1\2 **', p)         
             
         # 문장을 리스트에 추가
-        print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
+        # print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
         modParagraphs.append(p)
             
     # 줄별로 합치기
@@ -217,6 +219,7 @@ def getPost(txt):
     merge.append("---\n")
     merge.append("title: \"" + dic['title'] + "\"\n")
     merge.append("date: " + strToDate(dic['date']) + "\n")
+    merge.append("lastmod: " + strToDate(dic['lastmod']) + "\n")
     merge.append("hero: " + dic['hero'] + "\n")
     merge.append("description: " + dic['description'] + "\n")
     merge.append("tags: " + tags + "\n")
@@ -302,8 +305,8 @@ def getIndexMd(category):
 
 
 def eraseTemp():
-    if os.path.exists('temp'):
-        shutil.rmtree('temp')
+    if os.path.exists(tempPath):
+        shutil.rmtree(tempPath)
 
 def strToDate(str):
     str = re.sub("오후", "PM", str)
