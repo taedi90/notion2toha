@@ -10,6 +10,7 @@ markdownify = "*"
 zipfile2 = "*"
 pyinstaller = "*"
 setuptools = "*"
+pyside2 = "*"
 
 [dev-packages]
 

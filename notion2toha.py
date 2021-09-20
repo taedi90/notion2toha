@@ -6,13 +6,14 @@ import settings
 import func
 import subprocess
 import os
+#import icon
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1000, 800)
-        # MainWindow.setWindowIcon(QtGui.QIcon(':/icon.png'))
+        MainWindow.setWindowIcon(QtGui.QIcon(':/icon.png'))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setMaximumSize(QtCore.QSize(1677215, 16777215))
         self.centralwidget.setObjectName("centralwidget")
@@ -60,8 +61,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Notion Memo to Hugo-toha Post"))
-        # self.tedtOri.setPlainText(_translate("MainWindow", "변경하실 파일을 선택해주세요."))
-        self.tedtOri.setPlainText(_translate("MainWindow", settings.PROGRAM_PATH))
+        self.tedtOri.setPlainText(_translate("MainWindow", "변경하실 파일을 선택해주세요."))
         self.btnFind.setText(_translate("MainWindow", "불러오기"))
         self.btnSave.setText(_translate("MainWindow", "저장하기"))
         self.btnPath.setText(_translate("MainWindow", "경로설정"))

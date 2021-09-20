@@ -305,8 +305,10 @@ def getIndexMd(category):
 
 
 def eraseTemp():
-    if os.path.exists(tempPath):
+    try:
         shutil.rmtree(tempPath)
+    finally:
+        return
 
 def strToDate(str):
     str = re.sub("오후", "PM", str)
