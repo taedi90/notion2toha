@@ -1,6 +1,7 @@
 import configparser
 import pytz
 import os
+import sys
 
 def init():
     # 타임존 설정
@@ -16,13 +17,15 @@ def init():
     # LINE_SPACE = 3
 
     # 프로젝트 경로(경로는 \ 말고 /로 구분)
-    # 프로젝트 경로를 ''으로 설정해둘 경우 저장시마다 저장 위치 확인
     global PROJECT_PATH
     PROJECT_PATH = ''
     
     # 프로그램 경로
     global PROGRAM_PATH
-    PROGRAM_PATH = os.path.dirname(os.path.abspath(__file__))
+    if getattr(sys, 'frozen', False):
+        PROGRAM_PATH = os.path.dirname(sys.executable)
+    else:
+        PROGRAM_PATH = os.path.dirname(os.path.abspath(__file__))
     
     # config.ini 경로
     global CONF_PATH

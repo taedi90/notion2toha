@@ -22,8 +22,6 @@ def getMemo(filePath):
     renameFiles()
     
     # 파일 읽기
-    # md = open(os.path.join(tempPath, 'index.md'), 'rt', encoding='UTF8')
-    
     txt = None
     try:
         md = open(tempPath + '/index.md', 'rt', encoding='UTF8')
@@ -99,7 +97,7 @@ def getPost(txt):
 
     dic = {}    # front matters가 입력 될 딕셔너리
 
-    dic['title'] = res[0].replace('# ','')
+    dic['title'] = res[0].replace('# ','', 1)
 
     # front matters 파싱
     try:
@@ -108,7 +106,7 @@ def getPost(txt):
             splitKv = re.split(': ', frontMatter)
             dic[splitKv[0]] = splitKv[1]  
     except IndexError:
-        # 마크다운에 front matter가 없는 경우, res[1]이랑 res[2]이랑 합치기
+        # 마크다운에 front matter가 없는 경우, 본문 다시 합치기
         body = [res[1], "\n\n" ,res[2]]
         res[2] = ''.join(body)
 
@@ -131,7 +129,8 @@ def getPost(txt):
         name = nameFix(dic['title'])
         
     # parent & identfier 설정
-    if len(categories) >= 1:
+    # if len(categories) >= 1:
+    if categories[0] != '':
         parent = categories[len(categories) - 1]
         identifier = dic['category'] + '-' + name
     else:

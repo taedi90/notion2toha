@@ -188,6 +188,14 @@ cython_debug/
 .ionide
 
 temp/
+.venv/
+build/
+dist/
+*.spec
+test.*
+config.ini
+setup.py
+todo.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python
 
