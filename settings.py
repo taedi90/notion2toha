@@ -9,8 +9,8 @@ def init():
     TIME_ZONE = pytz.timezone('Asia/Seoul')
 
     # front matters 항목
-    global mattersForm
-    mattersForm = ['title', 'category', 'name', 'date', 'lastmod', 'description', 'hero', 'tags', 'weight']
+    global matters_form
+    matters_form = ['title', 'category', 'name', 'date', 'lastmod', 'description', 'hero', 'tags', 'weight']
 
     # 줄 간격
     # global LINE_SPACE

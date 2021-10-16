@@ -7,92 +7,92 @@ import shutil
 from zipfile import ZipFile
 from distutils.dir_util import copy_tree
 
-def getMemo(filePath):
+def get_memo(file_path):
     # 임시 폴더 생성
-    setTempPath()
+    set_temp_path()
 
     # 파일 확장자 확인
-    ext = os.path.splitext(filePath)[1]
+    ext = os.path.splitext(file_path)[1]
     if ext in '.zip':
-        unZip(filePath)
+        un_zip(file_path)
     elif ext in '.md':
-        copyMd(filePath)
+        copy_md(file_path)
 
     # 파일 이름 변경
-    renameFiles()
+    rename_files()
     
     # 파일 읽기
     txt = None
     try:
-        md = open(tempPath + '/index.md', 'rt', encoding='UTF8')
+        md = open(temp_path + '/index.md', 'rt', encoding='UTF8')
         txt = md.read()
         md.close()
     finally:
         return txt
 
-def setTempPath():
-    global tempPath
-    # tempPath = os.path.join(os.getcwd(), 'temp')
-    tempPath = settings.PROGRAM_PATH + "/temp"
+def set_temp_path():
+    global temp_path
+    # temp_path = os.path.join(os.getcwd(), 'temp')
+    temp_path = settings.PROGRAM_PATH + "/temp"
 
-    if os.path.exists(tempPath):
-        shutil.rmtree(tempPath)
-    os.makedirs(tempPath)
+    if os.path.exists(temp_path):
+        shutil.rmtree(temp_path)
+    os.makedirs(temp_path)
     
 
     
-def copyMd(filePath):
-    shutil.copy(filePath, tempPath)
+def copy_md(file_path):
+    shutil.copy(file_path, temp_path)
     
 
-def unZip(zipPath):
-    with ZipFile(zipPath, "r") as zip:
-        zip.extractall(path=tempPath)
+def un_zip(zip_path):
+    with ZipFile(zip_path, "r") as zip:
+        zip.extractall(path=temp_path)
 
 
-def renameFiles():
-    childs = os.listdir(tempPath)
+def rename_files():
+    childs = os.listdir(temp_path)
     for child in childs:
-        # fullPath = os.path.join(tempPath, child)
-        fullPath = tempPath + "/" + child
-        if os.path.isdir(fullPath):
-            originImgDirPath = fullPath
-            global originImgDirName
-            originImgDirName = child
+        # full_path = os.path.join(temp_path, child)
+        full_path = temp_path + "/" + child
+        if os.path.isdir(full_path):
+            origin_img_dir_path = full_path
+            global origin_img_dir_name
+            origin_img_dir_name = child
             
-            global renameImgDirName
-            renameImgDirName = 'images'
-            # renameImgDirPath = os.path.join(tempPath, renameImgDirName)
-            renameImgDirPath = tempPath + "/" + renameImgDirName
+            global rename_img_dir_name
+            rename_img_dir_name = 'images'
+            # rename_img_dir_path = os.path.join(temp_path, rename_img_dir_name)
+            rename_img_dir_path = temp_path + "/" + rename_img_dir_name
             
-            os.rename(originImgDirPath, renameImgDirPath)
+            os.rename(origin_img_dir_path, rename_img_dir_path)
             
-            imgs = os.listdir(renameImgDirPath)
-            global imgDict
-            imgDict = {}
+            imgs = os.listdir(rename_img_dir_path)
+            global img_dict
+            img_dict = {}
             idx = 1
             
             for img in imgs:
-                imgExt = re.sub("[\w\W]+?(\.[\w]+?\Z)",r"\1",img) # 확장자 가져오기
-                renameImg = "pic-{0:04d}".format(idx) + imgExt # 이름 변경
-                imgDict[img] = renameImg
+                img_ext = re.sub("[\w\W]+?(\.[\w]+?\Z)",r"\1",img) # 확장자 가져오기
+                rename_img = "pic-{0:04d}".format(idx) + img_ext # 이름 변경
+                img_dict[img] = rename_img
                 
-                # originImgPath = os.path.join(renameImgDirPath, img)
-                originImgPath = renameImgDirPath + "/" + img
-                # renameImgPath = os.path.join(renameImgDirPath, renameImg)
-                renameImgPath = renameImgDirPath + "/" + renameImg
+                # originImgPath = os.path.join(rename_img_dir_path, img)
+                originImgPath = rename_img_dir_path + "/" + img
+                # rename_imgPath = os.path.join(rename_img_dir_path, rename_img)
+                rename_imgPath = rename_img_dir_path + "/" + rename_img
 
-                os.rename(originImgPath, renameImgPath)
+                os.rename(originImgPath, rename_imgPath)
                 idx += 1
         else:
-            if os.path.splitext(fullPath)[1] == '.md' :
-                mdFilePath = fullPath
-                # renameMdFilePath = os.path.join(tempPath, "index.md")
-                renameMdFilePath = tempPath + "/index.md"
-                os.rename(mdFilePath, renameMdFilePath)
+            if os.path.splitext(full_path)[1] == '.md' :
+                mdfile_path = full_path
+                # rename_mdfile_path = os.path.join(temp_path, "index.md")
+                rename_mdfile_path = temp_path + "/index.md"
+                os.rename(mdfile_path, rename_mdfile_path)
 
 
-def getPost(txt):
+def get_post(txt):
     res = re.split('\n\n', txt, 2)
 
     dic = {}    # front matters가 입력 될 딕셔너리
@@ -101,17 +101,17 @@ def getPost(txt):
 
     # front matters 파싱
     try:
-        frontMatters = re.split('\n', res[1])
-        for frontMatter in frontMatters:
-            splitKv = re.split(': ', frontMatter)
-            dic[splitKv[0]] = splitKv[1]  
+        front_matters = re.split('\n', res[1])
+        for front_matter in front_matters:
+            split_kv = re.split(': ', front_matter)
+            dic[split_kv[0]] = split_kv[1]  
     except IndexError:
         # 마크다운에 front matter가 없는 경우, 본문 다시 합치기
         body = [res[1], "\n\n" ,res[2]]
         res[2] = ''.join(body)
 
     # 비어있는 front matter 딕셔너리에 추가
-    for i in settings.mattersForm:
+    for i in settings.matters_form:
         if i not in dic:
             dic[i] = ''
 
@@ -124,9 +124,9 @@ def getPost(txt):
     # name 설정
     global name
     if len(dic['name']) > 0:
-        name = nameFix(dic['name'])
+        name = name_fix(dic['name'])
     else:
-        name = nameFix(dic['title'])
+        name = name_fix(dic['title'])
         
     # parent & identfier 설정
     # if len(categories) >= 1:
@@ -157,16 +157,16 @@ def getPost(txt):
     # body = re.sub("(```)\n\n", r"\1" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
     
     # 이미지 링크 수정
-    if 'imgDict' in globals():
-        for key, val in imgDict.items():
-            originPath = parse.quote(originImgDirName + "/" + key, '/!@#$&()_-+=~\';,')
-            fixPath = renameImgDirName + "/" + val
-            body = body.replace(originPath, fixPath)
+    if 'img_dict' in globals():
+        for key, val in img_dict.items():
+            origin_path = parse.quote(origin_img_dir_name + "/" + key, '/!@#$&()_-+=~\';,')
+            fix_path = rename_img_dir_name + "/" + val
+            body = body.replace(origin_path, fix_path)
 
         
     # 줄별로 나누기
     paragraphs = body.split('\n')
-    modParagraphs = []
+    mod_paragraphs = []
     blockquote = 0
     quotation = 0
     
@@ -179,7 +179,7 @@ def getPost(txt):
             
         # 코드블럭 내부인 경우 h 태그 탐색안함
         if blockquote == 1:
-            modParagraphs.append(p)
+            mod_paragraphs.append(p)
             continue
         
         # > 인용문 줄바꿈 풀리는 현상(다단 인용은 처리 어려움)
@@ -191,7 +191,7 @@ def getPost(txt):
             
         # > 인용문 줄바꿈 처리, h 태그 탐색안함
         if quotation == 1:
-            modParagraphs.append(p + '  ')
+            mod_paragraphs.append(p + '  ')
             continue
         
         # h1 ~ h5 태그 hn + 1 태그로 바꾸기
@@ -203,10 +203,10 @@ def getPost(txt):
             p = re.sub('([\s]*)#{6}\s([\W\w]*)',r'** \1\2 **', p)         
             
         # 문장을 리스트에 추가
-        modParagraphs.append(p)
+        mod_paragraphs.append(p)
             
     # 줄별로 합치기
-    modBody = '\n'.join(modParagraphs)
+    mod_body = '\n'.join(mod_paragraphs)
     
 
 
@@ -215,8 +215,8 @@ def getPost(txt):
 
     merge.append("---\n")
     merge.append("title: \"" + dic['title'] + "\"\n")
-    merge.append("date: " + strToDate(dic['date']) + "\n")
-    merge.append("lastmod: " + strToDate(dic['lastmod']) + "\n")
+    merge.append("date: " + str_to_date(dic['date']) + "\n")
+    merge.append("lastmod: " + str_to_date(dic['lastmod']) + "\n")
     merge.append("hero: " + dic['hero'] + "\n")
     merge.append("description: " + dic['description'] + "\n")
     merge.append("tags: " + tags + "\n")
@@ -227,27 +227,27 @@ def getPost(txt):
     merge.append("    parent: " + parent + "\n")
     merge.append("    weight: " + dic['weight'] + "\n")
     merge.append("---\n\n")
-    merge.append(modBody)
+    merge.append(mod_body)
 
     modify = ''.join(merge)
 
     return modify
 
 
-def savePost(isProjectPath, path, txt):
+def save_post(is_project_path, path, txt):
     
     # index.md 파일 저장
-    # md = open(os.path.join(tempPath, 'index.md'), 'w', encoding='UTF8')
-    md = open(tempPath + '/index.md', 'wt', encoding='UTF8')
+    # md = open(os.path.join(temp_path, 'index.md'), 'w', encoding='UTF8')
+    md = open(temp_path + '/index.md', 'wt', encoding='UTF8')
     md.write(txt)
     md.close()
     
     # 프로젝트 폴더가 있으면 content 폴더 + 부모폴더에 저장
-    if(isProjectPath):
+    if(is_project_path):
         # path = os.path.join(path, 'content')
         # path = os.path.join(path, 'posts')
         path = path + '/content/posts'
-        postsPath = path # _index.md 생성용도
+        posts_path = path # _index.md 생성용도
         for category in categories:
             # path = os.path.join(path, category)
             path = path + '/' + category
@@ -256,28 +256,28 @@ def savePost(isProjectPath, path, txt):
     path = path + '/' + name
     
     try:
-        shutil.copytree(tempPath, path)
+        shutil.copytree(temp_path, path)
     except:
-        copy_tree(tempPath, path)
+        copy_tree(temp_path, path)
         
     # 부모폴더에 _index.md 만들기
-    if(isProjectPath):
+    if(is_project_path):
         for category in categories:
-            # postsPath = os.path.join(postsPath, category)
-            postsPath = postsPath + '/' + category
-            # mdFile = os.path.join(postsPath, "index.md")
-            index1 = postsPath + "/index.md"
-            index2 = postsPath + "/_index.md"
+            # posts_path = os.path.join(posts_path, category)
+            posts_path = posts_path + '/' + category
+            # mdFile = os.path.join(posts_path, "index.md")
+            index1 = posts_path + "/index.md"
+            index2 = posts_path + "/_index.md"
             if not os.path.isfile(index1) and not os.path.isfile(index2):
-                # md = open(os.path.join(postsPath, '_index.md'), 'w', encoding='UTF8')
-                md = open(postsPath + '/_index.md', 'wt', encoding='UTF8')
-                md.write(getIndexMd(category))
+                # md = open(os.path.join(posts_path, '_index.md'), 'w', encoding='UTF8')
+                md = open(posts_path + '/_index.md', 'wt', encoding='UTF8')
+                md.write(get_index_md(category))
                 md.close()
                 
     return path
 
 # _index.md 문구 생성
-def getIndexMd(category):
+def get_index_md(category):
     idx = categories.index(category)
     
     merge = []
@@ -301,13 +301,13 @@ def getIndexMd(category):
     
 
 
-def eraseTemp():
+def erase_temp():
     try:
-        shutil.rmtree(tempPath)
+        shutil.rmtree(temp_path)
     finally:
         return
 
-def strToDate(str):
+def str_to_date(str):
     str = re.sub("오후", "PM", str)
     str = re.sub("오전", "AM", str)
 
@@ -324,7 +324,7 @@ def strToDate(str):
 
 
 ### 폴더, front matter에 사용하지 못하는 문자 수정
-def nameFix(name):
+def name_fix(name):
     name = name.replace('\\','_')
     name = name.replace('/','_')
     name = name.replace(':','_')
