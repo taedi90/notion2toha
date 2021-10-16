@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 import settings
 import os
-import urllib.parse
+from urllib import parse
 import shutil
 from zipfile import ZipFile
 from distutils.dir_util import copy_tree
@@ -73,8 +73,8 @@ def renameFiles():
             idx = 1
             
             for img in imgs:
-                imgExt = re.sub("[\w\W]+?(\.[\w]+?\Z)",r"\1",img)
-                renameImg = "pic-{0:04d}".format(idx) + imgExt
+                imgExt = re.sub("[\w\W]+?(\.[\w]+?\Z)",r"\1",img) # 확장자 가져오기
+                renameImg = "pic-{0:04d}".format(idx) + imgExt # 이름 변경
                 imgDict[img] = renameImg
                 
                 # originImgPath = os.path.join(renameImgDirPath, img)
@@ -157,11 +157,12 @@ def getPost(txt):
     # body = re.sub("(```)\n\n", r"\1" + ("\nㅤ  " * settings.LINE_SPACE) + "\n", body) 
     
     # 이미지 링크 수정
-    if 'imgDict' in locals():
+    if 'imgDict' in globals():
         for key, val in imgDict.items():
-            originPath = urllib.parse.quote(originImgDirName + "/" + key)
+            originPath = parse.quote(originImgDirName + "/" + key, '/!@#$&()_-+=~\';,')
             fixPath = renameImgDirName + "/" + val
             body = body.replace(originPath, fixPath)
+
         
     # 줄별로 나누기
     paragraphs = body.split('\n')
@@ -178,7 +179,6 @@ def getPost(txt):
             
         # 코드블럭 내부인 경우 h 태그 탐색안함
         if blockquote == 1:
-            # print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
             modParagraphs.append(p)
             continue
         
@@ -191,7 +191,6 @@ def getPost(txt):
             
         # > 인용문 줄바꿈 처리, h 태그 탐색안함
         if quotation == 1:
-            # print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
             modParagraphs.append(p + '  ')
             continue
         
@@ -204,7 +203,6 @@ def getPost(txt):
             p = re.sub('([\s]*)#{6}\s([\W\w]*)',r'** \1\2 **', p)         
             
         # 문장을 리스트에 추가
-        # print("(bq : " + str(blockquote) + ", qt : " + str(quotation) + ")" + p)
         modParagraphs.append(p)
             
     # 줄별로 합치기
