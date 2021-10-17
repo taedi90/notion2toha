@@ -77,12 +77,12 @@ def rename_files():
                 rename_img = "pic-{0:04d}".format(idx) + img_ext # 이름 변경
                 img_dict[img] = rename_img
                 
-                # originImgPath = os.path.join(rename_img_dir_path, img)
-                originImgPath = rename_img_dir_path + "/" + img
-                # rename_imgPath = os.path.join(rename_img_dir_path, rename_img)
-                rename_imgPath = rename_img_dir_path + "/" + rename_img
+                # origin_img_path = os.path.join(rename_img_dir_path, img)
+                origin_img_path = rename_img_dir_path + "/" + img
+                # rename_img_path = os.path.join(rename_img_dir_path, rename_img)
+                rename_img_path = rename_img_dir_path + "/" + rename_img
 
-                os.rename(originImgPath, rename_imgPath)
+                os.rename(origin_img_path, rename_img_path)
                 idx += 1
         else:
             if os.path.splitext(full_path)[1] == '.md' :
@@ -218,6 +218,7 @@ def get_post(txt):
     merge.append("date: " + str_to_date(dic['date']) + "\n")
     merge.append("lastmod: " + str_to_date(dic['lastmod']) + "\n")
     merge.append("hero: " + dic['hero'] + "\n")
+    merge.append("url: " + re.sub('^/*(.*?)/*$', r'/\1/', dic['url']) + "\n")
     merge.append("description: " + dic['description'] + "\n")
     merge.append("tags: " + tags + "\n")
     merge.append("menu:\n")

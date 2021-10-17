@@ -10,7 +10,7 @@ def init():
 
     # front matters 항목
     global matters_form
-    matters_form = ['title', 'category', 'name', 'date', 'lastmod', 'description', 'hero', 'tags', 'weight']
+    matters_form = ['title', 'category', 'name', 'date', 'lastmod', 'description', 'hero', 'tags', 'weight', 'url']
 
     # 줄 간격
     # global LINE_SPACE
