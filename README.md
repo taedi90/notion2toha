@@ -59,3 +59,6 @@ notion2toha 프로그램을 실행합니다.
 - 예상치 못한 오류가 발생할 수 있으니 사용시 유의해주시기 바랍니다.
 - 노션의 다양한 기능을 모두 지원하지는 않습니다.
 (북마크, 표, 임베드 등은 미지원)
+
+## 블로그 링크
+[log.taedi.net/notion-to-hugo-toha/](https://log.taedi.net/notion-to-hugo-toha/)
